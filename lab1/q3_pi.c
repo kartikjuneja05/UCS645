@@ -4,13 +4,13 @@
 static long num_steps = 100000000;
 
 int main() {
-    double x, pi, sum = 0.0;
+    double pi, sum = 0.0;
     double step = 1.0 / (double)num_steps;
     double start, end, seq_time;
 
     start = omp_get_wtime();
     for (int i = 0; i < num_steps; i++) {
-        x = (i + 0.5) * step;
+        double x = (i + 0.5) * step;
         sum += 4.0 / (1.0 + x * x);
     }
     pi = step * sum;
@@ -20,9 +20,9 @@ int main() {
 
     sum = 0.0;
     start = omp_get_wtime();
-    #pragma omp parallel for reduction(+:sum) private(x) num_threads(8)
+    #pragma omp parallel for reduction(+:sum)
     for (int i = 0; i < num_steps; i++) {
-        x = (i + 0.5) * step;
+        double x = (i + 0.5) * step;
         sum += 4.0 / (1.0 + x * x);
     }
     pi = step * sum;

@@ -1,37 +1,43 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <omp.h>
+#include<stdio.h>
+#include<omp.h>
+#include<stdlib.h>
 
-#define N 65536 
+#define N 65536 //coz x and y are vectors of size 2^16
 
-int main() {
-    double a = 2.0;
-    double *x = (double*)malloc(N * sizeof(double));
-    double *y = (double*)malloc(N * sizeof(double));
-    double start, end, seq_time, par_time;
+int main(){
+    int a  = 2;
+    double* x = (double*)malloc(N * sizeof(double));
+    double* y = (double*)malloc(N * sizeof(double));
+    double p1_start, p1_end, t_p1, pi_start, pi_end, t_pi;
+    double speedup;
 
-    for(int i=0; i<N; i++) { x[i] = i*1.0; y[i] = i*2.0; }
-
-    start = omp_get_wtime();
-    for(int i=0; i<N; i++) {
+    //one thread
+    p1_start = omp_get_wtime();
+    for(int i = 0; i < N; i++){
         x[i] = a * x[i] + y[i];
     }
-    end = omp_get_wtime();
-    seq_time = end - start;
-    printf("Sequential Time: %f sec\n", seq_time);
+    p1_end = omp_get_wtime();
+    t_p1 = p1_end - p1_start;
+    speedup = t_p1 / t_p1;
 
-    printf("\nThreads\tTime (sec)\tSpeedup\n");
-    for (int t = 2; t <= 16; t++) {
-        start = omp_get_wtime();
-        #pragma omp parallel for num_threads(t)
-        for(int i=0; i<N; i++) {
+    printf("1 Thread: Time = %f, SpeedUp = %f\n", t_p1, speedup);
+
+    //n threads
+    int maxThreads = omp_get_max_threads();
+    for(int n = 2; n <= maxThreads; n++){
+        omp_set_num_threads(n);
+        pi_start = omp_get_wtime();
+        #pragma omp parallel for
+        for(int i = 0; i < N; i++){
             x[i] = a * x[i] + y[i];
         }
-        end = omp_get_wtime();
-        par_time = end - start;
-        printf("%d\t%f\t%f\n", t, par_time, seq_time / par_time);
-    }
+        pi_end = omp_get_wtime();
+        t_pi = pi_end - pi_start;
+        speedup = t_p1 / t_pi;
 
-    free(x); free(y);
+        printf("%d Thread: Time = %f, SpeedUp = %f\n", n, t_pi, speedup);
+    }
+    free(x);
+    free(y);
     return 0;
 }

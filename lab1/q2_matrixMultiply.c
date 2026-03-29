@@ -20,7 +20,7 @@ int main() {
     printf("Sequential Time: %f sec\n", seq_time);
 
     start = omp_get_wtime();
-    #pragma omp parallel for num_threads(8)
+    #pragma omp parallel for
     for (int i=0; i<SIZE; i++)
         for (int j=0; j<SIZE; j++) {
             double sum = 0;
@@ -30,14 +30,26 @@ int main() {
     printf("1D Parallel Time: %f sec (Speedup: %fx)\n", omp_get_wtime()-start, seq_time/(omp_get_wtime()-start));
 
     start = omp_get_wtime();
-    #pragma omp parallel for collapse(2) num_threads(8)
+    #pragma omp parallel for
     for (int i=0; i<SIZE; i++)
+        #pragma omp parallel for
         for (int j=0; j<SIZE; j++) {
             double sum = 0;
             for (int k=0; k<SIZE; k++) sum += A[i][k] * B[k][j];
             C[i][j] = sum;
         }
     printf("2D Parallel Time: %f sec (Speedup: %fx)\n", omp_get_wtime()-start, seq_time/(omp_get_wtime()-start));
+
+    start = omp_get_wtime();
+    #pragma omp parallel for collapse(2)
+    for (int i=0; i<SIZE; i++)
+        for (int j=0; j<SIZE; j++) {
+            double sum = 0;
+            for (int k=0; k<SIZE; k++) sum += A[i][k] * B[k][j];
+            C[i][j] = sum;
+        }
+
+    printf("2D (collapsed) Parallel Time: %f sec (Speedup: %fx)\n", omp_get_wtime()-start, seq_time/(omp_get_wtime()-start));
 
     return 0;
 }
